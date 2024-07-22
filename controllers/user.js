@@ -211,6 +211,69 @@ const list = async (req, res) => {
 };
 
 const update = async (req, res) => {
+    //recoger info del usuario a actualizar
+    const userIdentity = req.user
+    const userToUpdate = req.body
+
+    //eliminar campos sobrantes
+    delete userToUpdate.iat;
+    delete userToUpdate.exp;
+    delete userToUpdate.role;
+    delete userToUpdate.image;
+
+    //comprobar que el usuario existe
+    try {
+        // Control de usuarios duplicados
+        let users = await User.find({
+            $or: [
+                { email: userToUpdate.email.toLowerCase() },
+                { nick: userToUpdate.nick.toLowerCase() },
+            ]
+        });
+        let userIsset = false;
+        users.forEach(user => {
+            if (user && user._id != userIdentity.id) userIsset = true;
+        });
+
+        if (userIsset) {
+            return res.status(200).send({
+                status: "error",
+                message: "El usuario ya existe",
+            });
+        }
+
+
+        //si me llega la pass, cifrarla
+        if (userToUpdate.password) {
+            let pwd = await bcrypt.hash(userToUpdate.password, 10);
+            userToUpdate.password = pwd;
+        }
+
+        const userUpdated = await User.findByIdAndUpdate(userIdentity.id, userToUpdate, { new: true });
+
+        if (!userUpdated) {
+            return res.status(500).json({
+                status: "error",
+                message: "Usuario no encontrado",
+            });
+        }
+
+        //buscar y actualizar
+        return res.status(200).json({
+            status: "success",
+            message: 'Metodo de actualizar usuario',
+            user: userToUpdate
+        });
+
+
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "Error al guardar el usuario",
+            error: error.message
+        });
+    }
+
 
 }
 
@@ -223,5 +286,6 @@ module.exports = {
     register,
     login,
     profile,
-    list
+    list,
+    update
 }
