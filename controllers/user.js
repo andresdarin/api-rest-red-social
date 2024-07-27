@@ -3,7 +3,8 @@ const user = require('../models/user');
 const User = require('../models/user');
 const jwt = require('../services/jwt')
 const bcrypt = require('bcrypt');
-const fs = require('fs') //file system
+const fs = require('fs').promises //file system
+const path = require('path')
 const mongoosePagination = require('mongoose-pagination');
 
 
@@ -341,6 +342,21 @@ const upload = async (req, res) => {
 
 }
 
+// Obtener avatar
+const avatar = async (req, res) => {
+    try {
+        const file = req.params.file;
+        const filePath = path.resolve('./uploads/avatars', file);
+
+        await fs.access(filePath);
+        res.sendFile(filePath);
+    } catch (error) {
+        return res.status(404).json({
+            status: 'error',
+            message: 'No existe la imagen'
+        });
+    }
+};
 
 
 
@@ -352,6 +368,7 @@ module.exports = {
     profile,
     list,
     update,
-    upload
+    upload,
+    avatar
 }
 
