@@ -3,6 +3,7 @@ const user = require('../models/user');
 const User = require('../models/user');
 const jwt = require('../services/jwt')
 const bcrypt = require('bcrypt');
+const fs = require('fs') //file system
 const mongoosePagination = require('mongoose-pagination');
 
 
@@ -277,6 +278,69 @@ const update = async (req, res) => {
 
 }
 
+const upload = async (req, res) => {
+    try {
+        //Recoger el fichero de la imagen y comprobar que existe
+        if (!req.file) {
+            return res.status(404).send({
+                status: "error",
+                message: "La petiocion no incluye una imagen",
+                error: error.message
+            });
+        }
+
+        //conseguir el nombre del archivo
+        let image = req.file.originalname;
+
+        //sacar la extension del archivo
+        const imageSplit = image.split("\.")
+        const extension = imageSplit[1].toLowerCase();
+
+        //Comprobar extension
+        if (extension !== "png" && extension !== "jpg" && extension !== "jpeg" && extension !== "gif") {
+
+            //borrar archivo subido si no es correcto
+            const filePath = req.file.path;
+            const fileDeleted = fs.unlinkSync(filePath);
+
+            //devolver respuesta negativa
+            return res.status(404).send({
+                status: "error",
+                message: "Extension del fichero inválida"
+            });
+
+        }
+
+        //Si es correcta, guardar imagen en la base de datos
+        const userUpdated = await User.findOneAndUpdate(
+            { _id: req.user.id },
+            { image: req.file.filename },
+            { new: true }
+        );
+
+        if (!userUpdated) {
+            return res.status(500).json({
+                status: "error",
+                message: "Error en la subida del avatar",
+                error: error.message
+            });
+        }
+        //Devolver respuesta
+        return res.status(200).json({
+            status: "success",
+            user: userUpdated,
+            file: req.file,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "Error al guardar imagen",
+            error: error.message
+        });
+    }
+
+}
+
 
 
 
@@ -287,5 +351,7 @@ module.exports = {
     login,
     profile,
     list,
-    update
+    update,
+    upload
 }
+
