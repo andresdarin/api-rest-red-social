@@ -3,6 +3,8 @@ const User = require('../models/user');
 
 const mongoosePaginate = require('mongoose-pagination')
 
+const followService = require('../services/followServices')
+
 //Acciones de prueba
 const pruebaFollow = (req, res) => {
     return res.status(200).send({
@@ -116,6 +118,7 @@ const following = async (req, res) => {
 
         // Ver seguidores en común
         // Sacar un array de los ids de los usuarios que me siguen y siguen a la persona que estoy visitando el perfil
+        let followUserIds = followService.followUserIds(req.user.id);
 
 
         return res.status(200).send({
@@ -123,7 +126,9 @@ const following = async (req, res) => {
             message: 'Listado de usuarios a los que estoy siguiendo',
             follow: follows,
             total,
-            pages: Math.ceil(total / itemsPerPage)
+            pages: Math.ceil(total / itemsPerPage),
+            user_following: (await followUserIds).following,
+            user_follow_me: (await followUserIds).followers
         });
     } catch (error) {
         return res.status(500).send({

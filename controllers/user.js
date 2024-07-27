@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 const fs = require('fs').promises //file system
 const path = require('path')
 const mongoosePagination = require('mongoose-pagination');
+const followService = require('../services/followServices')
 
 
 // Acciones de prueba
@@ -155,10 +156,15 @@ const profile = async (req, res) => {
             });
         }
 
+        // Info de seguimiento
+        const followInfo = await followService.followThisUser(req.user.id, id);
+
         // Devolver el resultado
         return res.status(200).json({
             status: "success",
-            user: userProfile
+            user: userProfile,
+            followInfo: followInfo.following,
+            follower: followInfo.follower
         });
     } catch (error) {
         return res.status(500).json({
@@ -167,7 +173,9 @@ const profile = async (req, res) => {
             error: error.message
         });
     }
-}
+};
+
+
 
 const list = async (req, res) => {
     try {
