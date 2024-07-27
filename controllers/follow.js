@@ -1,6 +1,8 @@
 const Follow = require('../models/follow')
 const User = require('../models/user');
 
+const mongoosePaginate = require('mongoose-pagination')
+
 //Acciones de prueba
 const pruebaFollow = (req, res) => {
     return res.status(200).send({
@@ -83,12 +85,71 @@ const unfollow = async (req, res) => {
 }
 
 //Lista de usuarios a los que estoy siguiendo
+const following = async (req, res) => {
+    try {
+        // Sacar el id del usuario identificado
+        let userId = req.user.id;
 
-//Listado de usuarios que me siguen
+        // Comprobar si me llega el id por parámetro en url
+        if (req.params.id) {
+            userId = req.params.id;
+        }
+
+        // Comprobar si me llega la página, si no llega será la página 1
+        let page = 1;
+        if (req.params.page) {
+            page = req.params.page;
+        }
+
+        // Cuantos usuarios por página quiero mostrar
+        const itemsPerPage = 5;
+
+        // Buscar follows, popular datos de los usuarios y paginar con mongoose paginate
+        const follows = await Follow.find({ user: userId })
+            .populate('user followed', '-password -role -__v')
+            .skip((page - 1) * itemsPerPage)
+            .limit(itemsPerPage)
+            .exec();
+
+        // Obtener el total de documentos para la paginación
+        const total = await Follow.countDocuments({ user: userId });
+
+        // Ver seguidores en común
+        // Sacar un array de los ids de los usuarios que me siguen y siguen a la persona que estoy visitando el perfil
+
+
+        return res.status(200).send({
+            status: 'success',
+            message: 'Listado de usuarios a los que estoy siguiendo',
+            follow: follows,
+            total,
+            pages: Math.ceil(total / itemsPerPage)
+        });
+    } catch (error) {
+        return res.status(500).send({
+            status: 'error',
+            message: 'Error al obtener la lista de usuarios seguidos',
+            error: error.message
+        });
+    }
+}
+
+
+
+//Listado de usuarios que me siguen 
+const followers = async (req, res) => {
+    return res.status(200).send({
+        status: 'success',
+        message: 'Listado de usuarios que me siguen',
+        follow: followStored
+    })
+}
 
 //exportar acciones
 module.exports = {
     pruebaFollow,
     save,
-    unfollow
+    unfollow,
+    following,
+    followers
 }
