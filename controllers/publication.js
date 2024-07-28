@@ -1,7 +1,7 @@
-const publication = require("../models/publication");
 const Publication = require("../models/publication")
 const fs = require('fs').promises //file system
 const path = require('path')
+const followService = require('../services/followServices')
 
 //Acciones de prueba
 const pruebaPublication = (req, res) => {
@@ -117,7 +117,8 @@ const remove = async (req, res) => {
     }
 };
 
-//Listar todas las publicaciones de un usuario
+
+//Listar publicaciones de un usuario en concreto
 const user = async (req, res) => {
     try {
         //sacar el id de usuario
@@ -166,9 +167,6 @@ const user = async (req, res) => {
     }
 }
 
-
-//Listar publicaciones de un usuario en concreto
-
 //Subir ficheros
 const upload = async (req, res) => {
     try {
@@ -190,8 +188,6 @@ const upload = async (req, res) => {
         //sacar la extension del archivo
         const imageSplit = image.split("\.")
         const extension = imageSplit[1].toLowerCase();
-
-
 
         //Si es correcta, guardar imagen en la base de datos
         const publicationUpdated = await Publication.findOneAndUpdate(
@@ -241,6 +237,60 @@ const media = async (req, res) => {
     }
 };
 
+//listar todas las publicaciones
+const feed = async (req, res) => {
+    try {
+        //Sacar la pagina principal
+        let page = 1
+
+        if (req.params.page) {
+            page = req.params.page
+        }
+
+        //sacar un array de identificadores de usuarios que yo sigo como usuario identificado
+        const myFollows = await followService.followUserIds(req.user.id);
+
+        //estableces numero de elementos por pagina
+        const itemsPerPage = 5;
+        const total = await Publication.countDocuments({ user: { $in: myFollows.following } });
+
+
+
+        //find publicaciones usando el operador in, ordenar, popular, paginar
+        const publications = await Publication.find({ user: { $in: myFollows.following } })
+            .sort('-created_at') // Ordenar por fecha de creación, si es necesario
+            .skip((page - 1) * itemsPerPage) // Saltar los documentos según la página actual
+            .limit(itemsPerPage) // Limitar el número de documentos devueltos
+            .populate('user', '-password -email -__v') // Aquí se reemplazan los ObjectId en `user` con los documentos completos de User
+
+
+        if (!publications) {
+            return res.status(500).json({
+                status: 'error',
+                message: 'No se han listado las publicaciones del feed'
+            });
+        }
+
+        //devovler respuesta
+        return res.status(200).json({
+            status: "success",
+            message: 'Feed de publicaciones',
+            myFollows: myFollows.following,
+            publications,
+            page,
+            pages: Math.ceil(total / itemsPerPage),
+            total
+        });
+    } catch (error) {
+        console.error(`Error al acceder al archivo: ${error.message}`);
+        return res.status(500).json({
+            status: 'error',
+            message: 'No se han listado las publicaciones del feed',
+            message: error.message
+        });
+    }
+}
+
 
 //exportar acciones
 module.exports = {
@@ -250,5 +300,6 @@ module.exports = {
     remove,
     user,
     upload,
-    media
+    media,
+    feed
 }
