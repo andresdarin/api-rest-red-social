@@ -143,11 +143,53 @@ const following = async (req, res) => {
 
 //Listado de usuarios que me siguen 
 const followers = async (req, res) => {
-    return res.status(200).send({
-        status: 'success',
-        message: 'Listado de usuarios que me siguen',
-        follow: followStored
-    })
+    try {
+        // Sacar el id del usuario identificado
+        let userId = req.user.id;
+
+        // Comprobar si me llega el id por parámetro en url
+        if (req.params.id) {
+            userId = req.params.id;
+        }
+
+        // Comprobar si me llega la página, si no llega será la página 1
+        let page = 1;
+        if (req.params.page) {
+            page = req.params.page;
+        }
+
+        // Cuantos usuarios por página quiero mostrar
+        const itemsPerPage = 5;
+
+        // Buscar follows, popular datos de los usuarios y paginar con mongoose paginate
+        const follows = await Follow.find({ followed: userId })
+            .populate('user followed', '-password -role -__v')
+            .skip((page - 1) * itemsPerPage)
+            .limit(itemsPerPage)
+            .exec();
+
+        // Obtener el total de documentos para la paginación
+        const total = await Follow.countDocuments({ user: userId });
+
+        let followUserIds = followService.followUserIds(req.user.id);
+
+
+        return res.status(200).send({
+            status: 'success',
+            message: 'Listado de usuarios a los que me siguen',
+            follow: follows,
+            total,
+            pages: Math.ceil(total / itemsPerPage),
+            user_following: (await followUserIds).following,
+            user_follow_me: (await followUserIds).followers
+        });
+    } catch (error) {
+        return res.status(500).send({
+            status: 'error',
+            message: 'Error al obtener la lista de usuarios seguidos',
+            error: error.message
+        });
+    }
 }
 
 //exportar acciones

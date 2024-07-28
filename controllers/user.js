@@ -201,6 +201,9 @@ const list = async (req, res) => {
             });
         }
 
+        //info de los seguimientos
+        let followUserIds = followService.followUserIds(req.user.id);
+
         // Devolver el resultado
         return res.status(200).json({
             status: "success",
@@ -208,7 +211,9 @@ const list = async (req, res) => {
             page,
             itemsPerPage,
             total,
-            pages: Math.ceil(total / itemsPerPage)
+            pages: Math.ceil(total / itemsPerPage),
+            user_following: (await followUserIds).following,
+            user_follow_me: (await followUserIds).followers
         });
 
     } catch (error) {
