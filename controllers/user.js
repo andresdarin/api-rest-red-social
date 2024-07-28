@@ -1,6 +1,7 @@
 // Importar dependencias y modulos
-const user = require('../models/user');
 const User = require('../models/user');
+const Follow = require('../models/follow');
+const Publication = require('../models/publication');
 const jwt = require('../services/jwt')
 const bcrypt = require('bcrypt');
 const fs = require('fs').promises //file system
@@ -262,6 +263,8 @@ const update = async (req, res) => {
         if (userToUpdate.password) {
             let pwd = await bcrypt.hash(userToUpdate.password, 10);
             userToUpdate.password = pwd;
+        } else {
+            delete userToUpdate.password
         }
 
         const userUpdated = await User.findByIdAndUpdate(userIdentity.id, userToUpdate, { new: true });
@@ -371,7 +374,34 @@ const avatar = async (req, res) => {
     }
 };
 
+//contador de seguidores
+const counters = async (req, res) => {
+    try {
+        let userId = req.params.id;
 
+        if (req.params.id) {
+            userId = req.params.id
+        }
+
+        const following = await Follow.countDocuments({ 'user': userId })
+        const followed = await Follow.countDocuments({ 'followed': userId })
+        const publications = await Follow.countDocuments({ 'user': userId })
+
+        //Devolver respuesta
+        return res.status(200).json({
+            status: "success",
+            userId,
+            following,
+            followed,
+            publications
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: 'error',
+            message: error.message
+        });
+    }
+}
 
 // Exportar acciones
 module.exports = {
@@ -382,6 +412,7 @@ module.exports = {
     list,
     update,
     upload,
-    avatar
+    avatar,
+    counters
 }
 
