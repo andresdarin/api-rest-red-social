@@ -1,5 +1,7 @@
 const publication = require("../models/publication");
 const Publication = require("../models/publication")
+const fs = require('fs').promises //file system
+const path = require('path')
 
 //Acciones de prueba
 const pruebaPublication = (req, res) => {
@@ -214,14 +216,31 @@ const upload = async (req, res) => {
     } catch (error) {
         return res.status(500).json({
             status: "error",
-            message: "Error al guardar imagen",
-            error: error.message
+            message: error.message
         });
     }
 
 }
 
 //devolver archivos multimedia (imagenes)
+const media = async (req, res) => {
+    try {
+        const file = req.params.file;
+        const filePath = path.resolve('./uploads/publications', file);
+
+        await fs.access(filePath);
+
+        res.sendFile(filePath);
+    } catch (error) {
+        console.error(`Error al acceder al archivo: ${error.message}`);
+        return res.status(404).json({
+            status: 'error',
+            message: 'No existe el archivo',
+            error: error.message
+        });
+    }
+};
+
 
 //exportar acciones
 module.exports = {
@@ -230,5 +249,6 @@ module.exports = {
     detail,
     remove,
     user,
-    upload
+    upload,
+    media
 }
