@@ -136,7 +136,7 @@ const user = async (req, res) => {
         // find, populate, ordenar, paginar
         const publications = await Publication.find({ "user": userId })
             .sort("-created_at")
-            .populate('user', '-password -role -__v')
+            .populate('user', '-password -role -__v -email')
             .skip((page - 1) * itemsPerPage)
             .limit(itemsPerPage);
 
@@ -261,7 +261,7 @@ const feed = async (req, res) => {
             .sort('-created_at') // Ordenar por fecha de creación, si es necesario
             .skip((page - 1) * itemsPerPage) // Saltar los documentos según la página actual
             .limit(itemsPerPage) // Limitar el número de documentos devueltos
-            .populate('user', '-password -email -__v') // Aquí se reemplazan los ObjectId en `user` con los documentos completos de User
+            .populate('user', '-password -role -email -__v') // Aquí se reemplazan los ObjectId en `user` con los documentos completos de User
 
 
         if (!publications) {

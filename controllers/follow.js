@@ -108,7 +108,7 @@ const following = async (req, res) => {
 
         // Buscar follows, popular datos de los usuarios y paginar con mongoose paginate
         const follows = await Follow.find({ user: userId })
-            .populate('user followed', '-password -role -__v')
+            .populate('user followed', '-password -role -__v -email')
             .skip((page - 1) * itemsPerPage)
             .limit(itemsPerPage)
             .exec();
@@ -163,7 +163,7 @@ const followers = async (req, res) => {
 
         // Buscar follows, popular datos de los usuarios y paginar con mongoose paginate
         const follows = await Follow.find({ followed: userId })
-            .populate('user followed', '-password -role -__v')
+            .populate('user followed', '-password -role -__v -email')
             .skip((page - 1) * itemsPerPage)
             .limit(itemsPerPage)
             .exec();

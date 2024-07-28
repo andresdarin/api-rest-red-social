@@ -186,7 +186,7 @@ const list = async (req, res) => {
         const itemsPerPage = 5;
 
         // Consultar usuarios con paginación usando Mongoose
-        const users = await User.find({}, '-password')
+        const users = await User.find({}, '-password -email -role -__v')
             .sort('_id')
             .skip((page - 1) * itemsPerPage)
             .limit(itemsPerPage)
