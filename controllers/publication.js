@@ -114,7 +114,55 @@ const remove = async (req, res) => {
     }
 };
 
-//Listar todas las publicaciones
+//Listar todas las publicaciones de un usuario
+const user = async (req, res) => {
+    try {
+        //sacar el id de usuario
+        const userId = req.params.id
+
+        //controlar la pagina, el numero
+        let page = 1;
+        if (req.params.page) {
+            page = req.params.page
+        }
+
+        const itemsPerPage = 5;
+        const total = await Publication.countDocuments({ user: userId });
+
+        // find, populate, ordenar, paginar
+        const publications = await Publication.find({ "user": userId })
+            .sort("-created_at")
+            .populate('user', '-password -role -__v')
+            .skip((page - 1) * itemsPerPage)
+            .limit(itemsPerPage);
+
+
+        if (!publications || publications.length <= 0) {
+            return res.status(404).json({
+                status: "error",
+                message: "No se encontró publicaciones"
+            });
+        }
+
+        // Devolver la respuesta
+        return res.status(200).json({
+            status: "success",
+            message: "Publicaciones del perfil del usuario",
+            publications,
+            page,
+            pages: Math.ceil(total / itemsPerPage),
+            total
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "Error al buscar las publicaciones por usuario",
+            error: error.message
+        });
+    }
+}
+
 
 //Listar publicaciones de un usuario en concreto
 
@@ -127,5 +175,6 @@ module.exports = {
     pruebaPublication,
     save,
     detail,
-    remove
+    remove,
+    user
 }
