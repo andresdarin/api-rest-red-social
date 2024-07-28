@@ -1,3 +1,4 @@
+const publication = require("../models/publication");
 const Publication = require("../models/publication")
 
 //Acciones de prueba
@@ -167,6 +168,58 @@ const user = async (req, res) => {
 //Listar publicaciones de un usuario en concreto
 
 //Subir ficheros
+const upload = async (req, res) => {
+    try {
+        //sacar la id de la publicacion
+        const publicationId = req.params.id;
+
+        //Recoger el fichero de la imagen y comprobar que existe
+        if (!req.file) {
+            return res.status(404).send({
+                status: "error",
+                message: "La petiocion no incluye una imagen",
+                error: error.message
+            });
+        }
+
+        //conseguir el nombre del archivo
+        let image = req.file.originalname;
+
+        //sacar la extension del archivo
+        const imageSplit = image.split("\.")
+        const extension = imageSplit[1].toLowerCase();
+
+
+
+        //Si es correcta, guardar imagen en la base de datos
+        const publicationUpdated = await Publication.findOneAndUpdate(
+            { 'user': req.user.id },
+            { file: req.file.filename },
+            { new: true }
+        );
+
+        if (!publicationUpdated) {
+            return res.status(500).json({
+                status: "error",
+                message: "Error en la subida del avatar",
+                error: error.message
+            });
+        }
+        //Devolver respuesta
+        return res.status(200).json({
+            status: "success",
+            publication: publicationUpdated,
+            file: req.file,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: "error",
+            message: "Error al guardar imagen",
+            error: error.message
+        });
+    }
+
+}
 
 //devolver archivos multimedia (imagenes)
 
@@ -176,5 +229,6 @@ module.exports = {
     save,
     detail,
     remove,
-    user
+    user,
+    upload
 }

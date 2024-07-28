@@ -7,7 +7,7 @@ const check = require('../middlewares/auth')
 //Configuracion de subida
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "./uploads/avatars")
+        cb(null, "./uploads/avatars/")
     },
     filename: (req, file, cb) => {
         cb(null, "avatar-" + Date.now() + "-" + file.originalname)
