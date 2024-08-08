@@ -118,7 +118,6 @@ const login = async (req, res) => {
         // Eliminar la contraseña del objeto `user` para la respuesta
         const userResponse = user.toObject();
         delete userResponse.password; // Esto solo afecta a la respuesta
-        delete userResponse._id; // Esto solo afecta a la respuesta
 
 
         // Devolver los datos del usuario sin la contraseña
