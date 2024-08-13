@@ -124,12 +124,7 @@ const login = async (req, res) => {
         return res.status(200).send({
             status: 'success',
             message: 'Te identificaste correctamente',
-            user: {
-                _id: userResponse._id,
-                name: userResponse.name,
-                email: userResponse.email,
-                nick: userResponse.nick
-            },
+            user: userResponse,
             token
         });
 
@@ -225,10 +220,11 @@ const list = async (req, res) => {
     }
 };
 
+//actualizar en el backend
 const update = async (req, res) => {
     //recoger info del usuario a actualizar
-    const userIdentity = req.user
-    const userToUpdate = req.body
+    const userIdentity = req.user;
+    const userToUpdate = req.body;
 
     //eliminar campos sobrantes
     delete userToUpdate.iat;
@@ -245,6 +241,7 @@ const update = async (req, res) => {
                 { nick: userToUpdate.nick.toLowerCase() },
             ]
         });
+
         let userIsset = false;
         users.forEach(user => {
             if (user && user._id != userIdentity.id) userIsset = true;
@@ -257,13 +254,12 @@ const update = async (req, res) => {
             });
         }
 
-
         //si me llega la pass, cifrarla
         if (userToUpdate.password) {
             let pwd = await bcrypt.hash(userToUpdate.password, 10);
             userToUpdate.password = pwd;
         } else {
-            delete userToUpdate.password
+            delete userToUpdate.password;
         }
 
         const userUpdated = await User.findByIdAndUpdate(userIdentity.id, userToUpdate, { new: true });
@@ -278,10 +274,9 @@ const update = async (req, res) => {
         //buscar y actualizar
         return res.status(200).json({
             status: "success",
-            message: 'Metodo de actualizar usuario',
-            user: userToUpdate
+            message: 'Usuario actualizado correctamente',
+            user: userUpdated // Enviar el usuario actualizado
         });
-
 
     } catch (error) {
         return res.status(500).json({
@@ -290,9 +285,10 @@ const update = async (req, res) => {
             error: error.message
         });
     }
+};
 
 
-}
+
 
 const upload = async (req, res) => {
     try {

@@ -1,47 +1,46 @@
-//importar modulos
-const jwt = require('jwt-simple')
-const moment = require('moment')
+const jwt = require("jwt-simple");
+const moment = require("moment");
 
-//importar clave secreta
-const libjwt = require('../services/jwt');
+// Importar clave secreta
+const libjwt = require("../services/jwt");
 const secret = libjwt.secret;
 
-//funcion de autenticacion
+// Middleware de autenticación
 exports.auth = (req, res, next) => {
-    //comprobar si me llega la cabecera de autenticacion
+    // Comprobar si la petición tiene la cabecera de autenticación
     if (!req.headers.authorization) {
-        return res.status(400).send({
-            status: 'error',
-            message: "La peticion no tiene la cabecera de autenticacion"
-        })
+        return res.status(403).send({
+            status: "error",
+            message: "La petición no tiene la cabecera de autenticación"
+        });
     }
 
-    //Limpiar el token
-    let token = req.headers.authorization.replace(/['"]+/g, '') //elimina los caracteres estos, y los reemplaza por nada
+    // Limpiar el token (eliminar comillas si es necesario)
+    let token = req.headers.authorization.replace(/['"]+/g, '');
 
-    //Decodificar el token
     try {
+        // Decodificar el token
         let payload = jwt.decode(token, secret);
 
-        ///comprbar la expiracion del token
-        if (payload.exp <= moment().unix) {
+        // Comprobar la expiración del token
+        if (payload.exp <= moment().unix()) {
             return res.status(401).send({
-                status: 'error',
+                status: "error",
                 message: "Token expirado",
-                error: error.message
-            })
+            });
         }
-        //agregar datos de usuario a la request
-        req.user = payload
+
+        // Agregar datos del usuario al request
+        req.user = payload;
+
+        // Pasar a la siguiente acción
+        return next();
+
     } catch (error) {
-        return res.status(400).send({
-            status: 'error',
-            message: "La peticion no tiene la cabecera de autenticacion",
+        return res.status(404).send({
+            status: "error",
+            message: "Token inválido",
             error: error.message
-        })
+        });
     }
-
-    //pasar a la ejecucion de la ruta
-    next();
 }
-
