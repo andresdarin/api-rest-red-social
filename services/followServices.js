@@ -2,26 +2,17 @@ const Follow = require('../models/follow')
 
 const followUserIds = async (identityUserId) => {
     try {
-        //sacar info de seguimiento
         // Obtener los usuarios a los que sigue el usuario identificado
-        let following = await Follow.find({ 'user': identityUserId })
-            .select({ "_id": 0, "__v": 0, user: 0 });
+        let following = await Follow.find({ 'user': identityUserId }).select({ "_id": 0, "__v": 0, user: 0 });
+        console.log('Following:', following);
 
-        // Actualmente no estás obteniendo los seguidores, así que lo dejamos como false
-        let followers = await Follow.find({ 'followed': identityUserId })
-            .select({ "_id": 0, "__v": 0, user: 0 });;
+        // Obtener los seguidores del usuario identificado
+        let followers = await Follow.find({ 'followed': identityUserId }).select({ "_id": 0, "__v": 0, followed: 0 });
+        console.log('Followers:', followers);
 
-        //Procesar array de identificadores
-        let followingClean = []
-        following.forEach(follow => {
-            followingClean.push(follow.followed)
-        });
-
-        let followersClean = []
-        followers.forEach(follow => {
-            followersClean.push(follow.user)
-        });
-
+        // Procesar array de identificadores
+        let followingClean = following.map(follow => follow.followed);
+        let followersClean = followers.map(follow => follow.user);
 
         return {
             following: followingClean,
@@ -32,10 +23,11 @@ const followUserIds = async (identityUserId) => {
         console.error(error);
         return {
             following: [],
-            followers: false
+            followers: []
         };
     }
-}
+};
+
 
 
 const followThisUser = async (identityUserId, profileUserId) => {
