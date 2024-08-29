@@ -170,44 +170,39 @@ const user = async (req, res) => {
 //Subir ficheros
 const upload = async (req, res) => {
     try {
-        //sacar la id de la publicacion
+        // Obtener la ID de la publicación
         const publicationId = req.params.id;
 
-        //Recoger el fichero de la imagen y comprobar que existe
+        // Verificar si se ha recibido un archivo
         if (!req.file) {
             return res.status(404).send({
                 status: "error",
-                message: "La petiocion no incluye una imagen",
-                error: error.message
+                message: "La petición no incluye una imagen"
             });
         }
 
-        //conseguir el nombre del archivo
-        let image = req.file.originalname;
+        // Obtener el nombre del archivo
+        let image = req.file.filename;
 
-        //sacar la extension del archivo
-        const imageSplit = image.split("\.")
-        const extension = imageSplit[1].toLowerCase();
-
-        //Si es correcta, guardar imagen en la base de datos
-        const publicationUpdated = await Publication.findOneAndUpdate(
-            { 'user': req.user.id },
-            { file: req.file.filename },
+        // Actualizar la publicación con el nombre del archivo
+        const publicationUpdated = await Publication.findByIdAndUpdate(
+            publicationId,
+            { file: image },
             { new: true }
         );
 
         if (!publicationUpdated) {
             return res.status(500).json({
                 status: "error",
-                message: "Error en la subida del avatar",
-                error: error.message
+                message: "Error al actualizar la publicación"
             });
         }
-        //Devolver respuesta
+
+        // Enviar la respuesta
         return res.status(200).json({
             status: "success",
             publication: publicationUpdated,
-            file: req.file,
+            file: req.file
         });
     } catch (error) {
         return res.status(500).json({
@@ -215,8 +210,8 @@ const upload = async (req, res) => {
             message: error.message
         });
     }
-
 }
+
 
 //devolver archivos multimedia (imagenes)
 const media = async (req, res) => {
