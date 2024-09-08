@@ -121,51 +121,54 @@ const remove = async (req, res) => {
 //Listar publicaciones de un usuario en concreto
 const user = async (req, res) => {
     try {
-        //sacar el id de usuario
-        const userId = req.params.id
+        // Sacar el id del usuario
+        const userId = req.params.id;
 
-        //controlar la pagina, el numero
+        // Controlar la página
         let page = 1;
-        if (req.params.page) {
-            page = req.params.page
-        }
+        if (req.params.page) page = req.params.page;
+        page = parseInt(page);
 
         const itemsPerPage = 5;
+
+        // Obtener el total de publicaciones
         const total = await Publication.countDocuments({ user: userId });
 
-        // find, populate, ordenar, paginar
-        const publications = await Publication.find({ "user": userId })
-            .sort("-created_at")
-            .populate('user', '-password -role -__v -email')
-            .skip((page - 1) * itemsPerPage)
-            .limit(itemsPerPage);
-
-
-        if (!publications || publications.length <= 0) {
-            return res.status(404).json({
+        // Comprobar si hay publicaciones
+        if (total === 0) {
+            return res.status(404).send({
                 status: "error",
-                message: "No se encontró publicaciones"
+                message: "No hay publicaciones para mostrar"
             });
         }
 
-        // Devolver la respuesta
-        return res.status(200).json({
+        // Find, populate, ordenar, paginar
+        const publications = await Publication.find({ user: userId })
+            .sort('-created_at')   //ordenar por la fecha de creacion
+            .skip((page - 1) * itemsPerPage)
+            .limit(itemsPerPage)
+            .populate('user', '-password -__v -role -email')
+            .exec();
+
+        // Devolver respuesta
+        return res.status(200).send({
             status: "success",
-            message: "Publicaciones del perfil del usuario",
-            publications,
+            message: "Publicaciones del perfil de un usuario",
             page,
+            total,
             pages: Math.ceil(total / itemsPerPage),
-            total
+            publications
+
         });
 
     } catch (error) {
-        return res.status(500).json({
+        return res.status(500).send({
             status: "error",
-            message: "Error al buscar las publicaciones por usuario",
+            message: "Error en el servidor",
             error: error.message
         });
     }
-}
+};
 
 //Subir ficheros
 const upload = async (req, res) => {

@@ -8,6 +8,7 @@ const fs = require('fs').promises //file system
 const path = require('path')
 const mongoosePagination = require('mongoose-pagination');
 const followService = require('../services/followServices')
+const validate = require('../helpers/validate')
 
 
 // Acciones de prueba
@@ -32,6 +33,9 @@ const register = async (req, res) => {
     }
 
     try {
+        // Validación avanzada
+        validate(params);
+
         // Control de usuarios duplicados
         let users = await User.find({
             $or: [

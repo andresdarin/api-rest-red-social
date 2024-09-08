@@ -10,6 +10,7 @@
   "author": "Andres Darin",
   "license": "MIT",
   "dependencies": {
+    "api-rest-red-social": "file:",
     "bcrypt": "^5.1.1",
     "bcrypt-nodejs": "^0.0.3",
     "cors": "^2.8.5",
