@@ -36,7 +36,7 @@ Gestiona usuarios, publicaciones y autenticación mediante JWT, y permite subir 
 
 ### Clonar el repositorio
 ```bash
-git clone <URL_DEL_REPOSITORIO_BACKEND>
+git clone <https://github.com/andresdarin/Petstagram-back-end>
 ```
 
 ### Instalar dependencias
@@ -49,7 +49,7 @@ npm start
 
 ### Abrir en el navegador
 
-* API REST: [http://localhost:3000](http://localhost:3000)
+* API REST: (RENDER cuando esté en produ)
 
 ---
 
@@ -63,20 +63,6 @@ npm start        # Levanta el servidor backend con nodemon
 
 ## 🔗 Repositorio
 
-* **Código fuente:** [https://github.com/andresdarin/petstagram-backend](https://github.com/andresdarin/petstagram-backend)
+* **Código fuente:** [https://github.com/andresdarin/Petstagram-back-end](https://github.com/andresdarin/Petstagram-back-end) 
 
----
-
-## 🤝 Contribuciones
-
-1. Haz un fork del proyecto
-2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`)
-3. Realiza tus cambios y haz commit (`git commit -m "Agrega nueva funcionalidad"`)
-4. Haz push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
-
----
-
-## 📄 Licencia
-
-MIT License © 2025 Andrés Darin
+© 2025 Andrés Darin
